@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Planner } from './planner';
 import { Executor } from './executor';
 import { Memory } from './memory';
+import { ContextBuilder } from './context-builder';
 import { OllamaProvider } from '../providers/ollama';
 import { getConfig } from '../utils/config';
 import { buildPrompt } from '../utils/prompts';
@@ -13,6 +14,7 @@ export class AgentCore {
   private memory: Memory;
   private context: vscode.ExtensionContext;
   private provider: OllamaProvider;
+  private contextBuilder: ContextBuilder;
   private conversationHistory: Message[] = [];
 
   constructor(context: vscode.ExtensionContext) {
@@ -20,6 +22,7 @@ export class AgentCore {
     this.memory = new Memory(context);
     this.planner = new Planner(this.memory);
     this.executor = new Executor(this.memory);
+    this.contextBuilder = new ContextBuilder();
     
     const config = getConfig();
     this.provider = new OllamaProvider(config.ollamaModel, config.ollamaUrl);
@@ -37,10 +40,11 @@ export class AgentCore {
     });
 
     const systemPrompt = buildPrompt(message);
-    const messages: Message[] = [
-      { role: 'system', content: systemPrompt },
-      ...this.conversationHistory
-    ];
+    const messages = await this.contextBuilder.buildMessagesWithContext(
+      message,
+      systemPrompt,
+      this.conversationHistory
+    );
 
     try {
       const response = await this.provider.sendMessage(messages);
@@ -100,8 +104,31 @@ export class AgentCore {
       return;
     }
 
-    // TODO: Send errors to AI for analysis and fix suggestions
-    vscode.window.showInformationMessage(`Found ${errors.length} errors. Analyzing...`);
+    vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: 'VibeCoder: Analyzing errors...',
+      cancellable: false
+    }, async (progress) => {
+      progress.report({ message: 'Collecting error context...' });
+      
+      // Import ErrorAnalyzer dynamically to avoid circular deps
+      const { ErrorAnalyzer } = await import('../tools/error-analyzer');
+      const analyzer = new ErrorAnalyzer();
+      const errorContexts = await analyzer.analyzeErrors(editor.document.uri);
+      const formattedErrors = analyzer.formatErrorsForAI(errorContexts);
+
+      progress.report({ message: 'Asking AI for fixes...' });
+      
+      const fixPrompt = `Please analyze these errors and suggest fixes:\n\n${formattedErrors}`;
+      const fix = await this.chat(fixPrompt);
+
+      // Show fix in new document
+      const doc = await vscode.workspace.openTextDocument({
+        content: fix,
+        language: 'markdown'
+      });
+      await vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside);
+    });
   }
 
   async deploy() {
