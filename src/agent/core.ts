@@ -2,28 +2,64 @@ import * as vscode from 'vscode';
 import { Planner } from './planner';
 import { Executor } from './executor';
 import { Memory } from './memory';
+import { OllamaProvider } from '../providers/ollama';
+import { getConfig } from '../utils/config';
+import { buildPrompt } from '../utils/prompts';
+import { Message } from '../providers/base';
 
 export class AgentCore {
   private planner: Planner;
   private executor: Executor;
   private memory: Memory;
   private context: vscode.ExtensionContext;
+  private provider: OllamaProvider;
+  private conversationHistory: Message[] = [];
 
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
     this.memory = new Memory(context);
     this.planner = new Planner(this.memory);
     this.executor = new Executor(this.memory);
+    
+    const config = getConfig();
+    this.provider = new OllamaProvider(config.ollamaModel, config.ollamaUrl);
   }
 
   async start() {
     await this.memory.load();
-    console.log('[VibeCoder] Agent started');
+    console.log('[VibeCoder] Agent started with Ollama');
   }
 
   async chat(message: string): Promise<string> {
-    // TODO: Will be implemented in Sprint 2 with AI provider
-    return `Echo: ${message}`;
+    this.conversationHistory.push({
+      role: 'user',
+      content: message
+    });
+
+    const systemPrompt = buildPrompt(message);
+    const messages: Message[] = [
+      { role: 'system', content: systemPrompt },
+      ...this.conversationHistory
+    ];
+
+    try {
+      const response = await this.provider.sendMessage(messages);
+      
+      this.conversationHistory.push({
+        role: 'assistant',
+        content: response.content
+      });
+
+      // Keep history manageable (last 10 messages)
+      if (this.conversationHistory.length > 10) {
+        this.conversationHistory = this.conversationHistory.slice(-10);
+      }
+
+      return response.content;
+    } catch (error) {
+      console.error('[VibeCoder] Chat error:', error);
+      throw new Error(`Failed to get response: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   async setupProject(description: string) {
