@@ -21,9 +21,9 @@ export class AgentCore {
     console.log('[VibeCoder] Agent started');
   }
 
-  async openChat() {
-    // TODO: Open webview chat panel
-    vscode.window.showInformationMessage('Chat panel coming soon!');
+  async chat(message: string): Promise<string> {
+    // TODO: Will be implemented in Sprint 2 with AI provider
+    return `Echo: ${message}`;
   }
 
   async setupProject(description: string) {

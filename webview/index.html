@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src ${cspSource} 'unsafe-inline';">
+    <link rel="stylesheet" href="${chatCssUri}">
+    <title>VibeCoder Agent</title>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="messages" class="messages"></div>
+        <div class="input-container">
+            <textarea id="messageInput" placeholder="Ask VibeCoder anything..." rows="1"></textarea>
+            <button id="sendButton">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 10l16-8-7 16-2-8-7-0z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <script src="${chatJsUri}"></script>
+</body>
+</html>

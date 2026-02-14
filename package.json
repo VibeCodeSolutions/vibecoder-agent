@@ -13,9 +13,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:vibecoder.start",
-    "onCommand:vibecoder.chat",
-    "onView:vibecoder-sidebar"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -46,9 +44,37 @@
         {
           "id": "vibecoder",
           "title": "VibeCoder Agent",
-          "icon": "media/icon.svg"
+          "icon": "resources/icon.svg"
         }
       ]
+    },
+    "views": {
+      "vibecoder": [
+        {
+          "id": "vibecoder-sidebar",
+          "name": "Agent Status"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "VibeCoder Agent",
+      "properties": {
+        "vibecoder.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Anthropic API Key for Claude"
+        },
+        "vibecoder.model": {
+          "type": "string",
+          "default": "claude-3-5-sonnet-20241022",
+          "enum": [
+            "claude-3-5-sonnet-20241022",
+            "claude-3-7-sonnet-20250219",
+            "claude-opus-4-20250514"
+          ],
+          "description": "Claude model to use"
+        }
+      }
     }
   },
   "scripts": {
