@@ -1,0 +1,74 @@
+{
+  "name": "vibecoder-agent",
+  "displayName": "VibeCoder Agent",
+  "description": "AI-powered coding agent that automates project setup, debugging & deployment",
+  "version": "0.1.0",
+  "publisher": "VibeCodeSolutions",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:vibecoder.start",
+    "onCommand:vibecoder.chat",
+    "onView:vibecoder-sidebar"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vibecoder.start",
+        "title": "VibeCoder: Start Agent"
+      },
+      {
+        "command": "vibecoder.chat",
+        "title": "VibeCoder: Open Chat"
+      },
+      {
+        "command": "vibecoder.setup",
+        "title": "VibeCoder: Setup Project"
+      },
+      {
+        "command": "vibecoder.debug",
+        "title": "VibeCoder: Debug Error"
+      },
+      {
+        "command": "vibecoder.deploy",
+        "title": "VibeCoder: Deploy"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vibecoder",
+          "title": "VibeCoder Agent",
+          "icon": "media/icon.svg"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@google/generative-ai": "^0.20.0",
+    "openai": "^4.0.0",
+    "tree-sitter": "^0.21.0",
+    "better-sqlite3": "^11.0.0"
+  }
+}
